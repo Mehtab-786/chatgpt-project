@@ -1,0 +1,72 @@
+const express = require('express')
+const userModel = require('../models/user.model')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+
+const router = express.Router()
+
+router.post('/register', async (req, res) => {
+    const { fullname: { firstname, lastname }, email, password } = req.body
+    const ifUserExisted = await userModel.findOne({ email })
+
+    if (ifUserExisted) {
+        return res.status(409).json({
+            message: "User already existed"
+        })
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    const user = await userModel.create({
+        fullname: { firstname, lastname },
+        email,
+        password: hashedPassword
+    })
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET)
+    res.cookie('token', token)
+
+    return res.status(201).json({
+        message: "User registered successfully",
+        user: {
+            _id: user._id,
+            email: user.email,
+            username: user.fullname
+        }
+    })
+})
+
+
+router.post('/login', async (req,res) => {
+    const {password, email} = req.body
+
+    const user = await userModel.findOne({email})
+
+    if (!user) {
+        return res.status(400).json({
+            message:"Invalid email or password"
+        })
+    }
+    
+    const isPasswordValid = await bcrypt.compare(password,user.password)
+    
+    if (!isPasswordValid) {
+        return res.status(400).json({
+            message:"Invalid email or password"
+        })
+    }
+
+    const token = jwt.sign({id:user._id}, process.env.JWT_SECRET)
+
+    res.cookie('token', token)
+
+    return res.status(200).json({
+        message:"User logged in succesfully"
+    })
+    
+        
+})
+
+
+
+module.exports = router
