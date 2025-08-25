@@ -41,16 +41,14 @@ function socketServer(httpServer) {
             })
 
             const vectors = await generateVectors(messagePayload.content)
-            
-            const memory =  await queryMemory({
-                queryVectors:vectors,
-                limit:3,
-                metadata:{
-                    user:socket.user._id
+
+            const memory = await queryMemory({
+                queryVectors: vectors,
+                limit: 3,
+                metadata: {
+                    user: socket.user._id
                 }
             })
-
-            console.log("ai qery answer = :", memory)
 
             await createMemory({
                 vectors,
@@ -58,23 +56,33 @@ function socketServer(httpServer) {
                 metadata: {
                     chat: messagePayload.chat,
                     user: socket.user._id,
-                    text : messagePayload.content
+                    text: messagePayload.content
                 }
             })
-
 
 
             const chatHistory = (await messageModel.find({
                 chat: messagePayload.chat
             }).sort({ createdAt: -1 }).limit(4).lean()).reverse()
 
-            const response = await generateContent(chatHistory.map(item => {
+            const stm = chatHistory.map(item => {
                 return {
                     role: item.role,
                     parts: [{ text: item.content }]
                 }
-            }))
-            
+            })
+
+            const ltm = [
+                {
+                    role: "user",
+                    parts: [{
+                        text: `these are some previous message from the chat , use them to generate response ${memory.map(item => item.metadata.text).join("\n")}`
+                    }]
+                }
+            ]
+
+            const response = await generateContent([...ltm, ...stm])
+
             const responseMessage = await messageModel.create({
                 content: response,
                 user: socket.user._id,
@@ -82,19 +90,18 @@ function socketServer(httpServer) {
                 role: "model"
             })
 
-
             const responseVectors = await generateVectors(response)
 
             await createMemory({
-                vectors : responseVectors,
+                vectors: responseVectors,
                 messageId: responseMessage._id,
                 metadata: {
                     chat: messagePayload.chat,
                     user: socket.user._id,
-                    text : response
+                    text: response
                 }
             })
-            
+
             socket.emit('ai-response', {
                 content: response,
                 chat: messagePayload.chat
