@@ -6,6 +6,10 @@ async function generateContent(prompt) {
   const response = await ai.models.generateContent({
     model: "gemini-2.0-flash",
     contents: prompt,
+    config:{
+      temperature:0.7,
+      systemInstruction:"you are an ai, whose name is hector, you help people by  giving answer of their question in precise and formal manner"
+    }
   });
   return response.text
 }
