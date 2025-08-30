@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Register = () => {
-    const [ form, setForm ] = useState({ email: '', firstname: '', lastname: '', password: '' });
+    const [ form, setForm ] = useState({ email: '', username: '', password: '' });
     const [ submitting, setSubmitting ] = useState(false);
     const navigate = useNavigate();
 
@@ -18,12 +18,9 @@ const Register = () => {
         setSubmitting(true);
         console.log(form);
 
-        axios.post("http://localhost:3000/api/auth/register", {
+        axios.post("https://chatgpt-project-g7xt.onrender.com/api/auth/register", {
             email: form.email,
-            fullName: {
-                firstName: form.firstname,
-                lastName: form.lastname
-            },
+            username: form.username,
             password: form.password
         }, {
             withCredentials: true
@@ -59,12 +56,8 @@ const Register = () => {
                     </div>
                     <div className="grid-2">
                         <div className="field-group">
-                            <label htmlFor="firstname">First name</label>
-                            <input id="firstname" name="firstname" placeholder="Jane" value={form.firstname} onChange={handleChange} required />
-                        </div>
-                        <div className="field-group">
-                            <label htmlFor="lastname">Last name</label>
-                            <input id="lastname" name="lastname" placeholder="Doe" value={form.lastname} onChange={handleChange} required />
+                            <label htmlFor="username">User name</label>
+                            <input id="username" name="username" placeholder="Mehtab Hussain" value={form.username} onChange={handleChange} required />
                         </div>
                     </div>
                     <div className="field-group">
