@@ -1,6 +1,11 @@
+import React from 'react';
 import './ChatSidebar.css';
 
+
 const ChatSidebar = ({ chats, activeChatId, onSelectChat, onNewChat, open }) => {
+
+
+  
   return (
     <aside className={"chat-sidebar " + (open ? 'open' : '')} aria-label="Previous chats">
       <div className="sidebar-header">

@@ -7,11 +7,23 @@ async function generateContent(prompt) {
         model: "gemini-2.0-flash",
         contents: prompt,
         config:{
-            systemInstruction:"Your name will be walter and you are an intelligent ai , who gives brief answer not so long"
+            systemInstruction:"Your name will be walter and you are an intelligent ai who provides answer to the question asked"
         }
     });
 
     return response.text;
 };
 
-module.exports = { generateContent };
+async function generateVectors(prompt) {
+    const response = await ai.models.embedContent({
+        model: "gemini-embedding-001",
+        contents: prompt,
+        config:{
+            outputDimensionality:768
+        }
+    });
+
+    return response.embeddings[0].values;
+};
+
+module.exports = { generateContent, generateVectors };

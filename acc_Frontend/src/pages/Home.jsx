@@ -48,7 +48,6 @@ const Home = () => {
     if (title) title = title.trim();
     if (!title) return
 
-    // const response = await axios.post("https://cohort-1-project-chat-gpt.onrender.com/api/chat", {
     const response = await axios.post("http://localhost:3000/api/chat", {
       title
     }, {
@@ -62,25 +61,21 @@ const Home = () => {
   // Ensure at least one chat exists initially
   useEffect(() => {
 
-    // axios.get("https://cohort-1-project-chat-gpt.onrender.com/api/chat", { withCredentials: true })
     axios.get("http://localhost:3000/api/chat", { withCredentials: true })
       .then(response => {
         dispatch(setChats(response.data.chats.reverse()));
       })
 
-    // const tempSocket = io("https://cohort-1-project-chat-gpt.onrender.com", {
     const tempSocket = io("http://localhost:3000", {
       withCredentials: true,
-      
     })
-    tempSocket.on("ai-response", (messagePayload) => {
-      console.log("Received AI response:", messagePayload);
 
+    tempSocket.on("ai-response", (messagePayload) => {
+      
       setMessages((prevMessages) => [ ...prevMessages, {
         type: 'ai',
-        content: messagePayload.content
+        content: messagePayload.response
       } ]);
-
       dispatch(sendingFinished());
     });
 
@@ -91,7 +86,6 @@ const Home = () => {
   const sendMessage = async () => {
 
     const trimmed = input.trim();
-    console.log("Sending message:", trimmed);
     if (!trimmed || !activeChatId || isSending) return;
     dispatch(sendingStarted());
 
@@ -99,8 +93,6 @@ const Home = () => {
       type: 'user',
       content: trimmed
     } ];
-
-    console.log("New messages:", newMessages);
 
     setMessages(newMessages);
     dispatch(setInput(''));
@@ -110,29 +102,17 @@ const Home = () => {
       content: trimmed
     })
 
-    // try {
-    //   const reply = await fakeAIReply(trimmed);
-    //   dispatch(addAIMessage(activeChatId, reply));
-    // } catch {
-    //   dispatch(addAIMessage(activeChatId, 'Error fetching AI response.', true));
-    // } finally {
-    //   dispatch(sendingFinished());
-    // }
   }
 
   const getMessages = async (chatId) => {
 
-  //  const response = await  axios.get(`https://cohort-1-project-chat-gpt.onrender.com/api/chat/messages/${chatId}`, { withCredentials: true })
    const response = await  axios.get(`http://localhost:3000/api/chat/messages/${chatId}`, { withCredentials: true })
-
-   console.log("Fetched messages:", response.data.messages);
 
    setMessages(response.data.messages.map(m => ({
      type: m.role === 'user' ? 'user' : 'ai',
      content: m.content
    })));
   }
-
 
 return (
   <div className="chat-layout minimal">
